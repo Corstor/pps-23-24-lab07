@@ -63,13 +63,23 @@ class RobotWithBattery(val robot: Robot, val batteryConsumed: Int, val maxBatter
       this.consumeBattery()
 
 class RobotCanFail(val robot: Robot, private val probability: Double = 0.5) extends Robot:
+  export robot.{position, direction}
   override def turn(dir: Direction): Unit = if Math.random() >= probability then
       robot.turn(dir)
 
   override def act(): Unit = if Math.random() >= probability then
       robot.act()
 
-  export robot.{position, direction}
+class RobotRepeated(val robot: Robot, private val n: Int = 1) extends Robot:
+  export robot.{position, direction, turn}
+
+  override def act(): Unit = 
+    def _act(i: Int): Unit = i match
+      case k if k > 0 =>
+        robot.act()
+        _act(i - 1)
+      case _ =>
+    _act(n)
 
 @main def testRobot(): Unit =
   val robot = LoggingRobot(SimpleRobot((0, 0), Direction.North))

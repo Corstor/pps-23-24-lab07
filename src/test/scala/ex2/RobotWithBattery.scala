@@ -3,7 +3,7 @@ package ex2
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class RobotWithBatterypec extends AnyFlatSpec with Matchers:
+class RobotWithBatterySpec extends AnyFlatSpec with Matchers:
   "A RobotWithBattery" should "turn correctly" in:
     val robot = new RobotWithBattery(SimpleRobot((0, 0), Direction.North), batteryConsumed = 5)
 
