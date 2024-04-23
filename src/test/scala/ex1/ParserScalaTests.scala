@@ -2,8 +2,9 @@ package ex1
 
 import org.scalatest.matchers.should.Matchers.*
 import ex1.Parsers.*
+import org.scalatest.flatspec.AnyFlatSpec
 
-class ParserScalaTests extends org.scalatest.flatspec.AnyFlatSpec:
+class ParserScalaTests extends AnyFlatSpec:
     "Basic parser" should "accept only right strings" in:
         def parser = new BasicParser(Set('a', 'b', 'c'))
         parser.parseAll("aabc".toList) shouldBe true
