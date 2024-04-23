@@ -62,9 +62,27 @@ class RobotWithBattery(val robot: Robot, val batteryConsumed: Int, val maxBatter
       robot.turn(dir)
       this.consumeBattery()
 
+class RobotCanFail(val robot: Robot, private val probability: Double = 0.5) extends Robot:
+  override def turn(dir: Direction): Unit = if Math.random() >= probability then
+      robot.turn(dir)
+
+  override def act(): Unit = if Math.random() >= probability then
+      robot.act()
+
+  export robot.{position, direction}
+
 @main def testRobot(): Unit =
   val robot = LoggingRobot(SimpleRobot((0, 0), Direction.North))
   robot.act() // robot at (0, 1) facing North
   robot.turn(robot.direction.turnRight) // robot at (0, 1) facing East
   robot.act() // robot at (1, 1) facing East
   robot.act() // robot at (2, 1) facing East  
+
+  val randomRobot = RobotCanFail(robot)
+  println("Random Robot")
+  
+  randomRobot.turn(randomRobot.direction.turnLeft) // Turn to North or don't
+  randomRobot.act() // can be facing to North or East
+  randomRobot.act() // can be facing to North or East
+  randomRobot.turn(randomRobot.direction.turnLeft) //Turn to your left or don't (can be facing to North or West)
+  randomRobot.act() // can be facing to North, West or East
