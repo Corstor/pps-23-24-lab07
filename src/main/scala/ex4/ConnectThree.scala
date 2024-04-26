@@ -31,7 +31,7 @@ object ConnectThree extends App:
     case h :: t => if h.x == x && h.y == y then Option(h.player) else find(t, x, y)
     case _ => Option.empty
 
-  def firstAvailableRow(board: Board, x: Int): Option[Int] = 
+  def firstAvailableRow(board: Board, x: Int): Option[Int] =
     def _firstAvailableRow(board: Board, x: Int, c: Int): Option[Int] = board match
       case h :: t => _firstAvailableRow(t, x, c + (if h.x == x then 1 else 0))
       case _ => if c > bound then Option.empty else Option(c)
@@ -39,35 +39,36 @@ object ConnectThree extends App:
 
   def placeAnyDisk(board: Board, player: Player): Seq[Board] =
     for
-      n <- 0 to bound
-      x = firstAvailableRow(board, n)
-      if !x.isEmpty
-      disk = Disk(n, x.get, player)
+      x <- 0 to bound
+      y <- firstAvailableRow(board,x)
+      disk = Disk(x, y, player)
     yield
       disk +: board
 
   def computeAnyGame(player: Player, moves: Int): LazyList[Game] =
-    val startingBoard: Board = List()
-    moves match
-      case n if n <= 0 => LazyList(List(startingBoard))
-      case _ =>
-        for
-          game <- computeAnyGame(player.other, moves - 1)
-          sol <- placeAnyDisk(game.head, player)
-          if !isWon(sol)
-        yield
-          sol +: game
+    val emptyGame: LazyList[Game] = LazyList(List(List()))
+    def _computeAnyGame(player: Player, moves: Int): LazyList[Game] =
+      moves match
+        case 0 => emptyGame
+        case _ =>
+          for
+            game <- _computeAnyGame(player.other, moves - 1)
+            sol <- placeAnyDisk(game.head, player)
+          yield
+            if !isWon(sol) then sol +: game else game
+    _computeAnyGame(if moves % 2 == 0 then player.other else player, moves)
   
   private def isWon(sol: Board): Boolean = 
     (for
-      x <- 1 until bound
-      y <- 1 until bound
+      x <- 0 to bound
+      y <- 0 to bound
+      if !((x == 0 || x == bound) && (y == 0 || y == bound))
       player <- find(sol, x, y)
       if isConnectedToThree(x, y, player, sol)
     yield
       true).nonEmpty
 
-  private def isConnectedToThree(x :Int, y: Int, player: Player, board: Board): Boolean =
+  private def isConnectedToThree(x: Int, y: Int, player: Player, board: Board): Boolean =
     (board.find(_ == Disk(x - 1, y, player)).nonEmpty && board.find(_ == Disk(x + 1, y, player)).nonEmpty) ||
     (board.find(_ == Disk(x, y - 1, player)).nonEmpty && board.find(_ == Disk(x, y + 1, player)).nonEmpty) ||
     (board.find(_ == Disk(x - 1, y - 1, player)).nonEmpty && board.find(_ == Disk(x + 1, y + 1, player)).nonEmpty) ||
@@ -110,12 +111,11 @@ object ConnectThree extends App:
   // ...O ..XO .X.O X..O
   println("EX 4: ")
 // Exercise 3 (ADVANCED!): implement computeAnyGame such that..
-  var i = 0
-  computeAnyGame(O, 5).foreach { g =>
+  computeAnyGame(O, 17).foreach ( g =>
     printBoards(g)
-    println(i)
-    i = i + 1
-  }
+    println()
+  )
+
 //  .... .... .... .... ...O
 //  .... .... .... ...X ...X
 //  .... .... ...O ...O ...O
