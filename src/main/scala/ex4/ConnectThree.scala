@@ -54,8 +54,24 @@ object ConnectThree extends App:
         for
           game <- computeAnyGame(player.other, moves - 1)
           sol <- placeAnyDisk(game.head, player)
+          if !isWon(sol)
         yield
           sol +: game
+  
+  private def isWon(sol: Board): Boolean = 
+    (for
+      x <- 1 until bound
+      y <- 1 until bound
+      player <- find(sol, x, y)
+      if isConnectedToThree(x, y, player, sol)
+    yield
+      true).nonEmpty
+
+  private def isConnectedToThree(x :Int, y: Int, player: Player, board: Board): Boolean =
+    (board.find(_ == Disk(x - 1, y, player)).nonEmpty && board.find(_ == Disk(x + 1, y, player)).nonEmpty) ||
+    (board.find(_ == Disk(x, y - 1, player)).nonEmpty && board.find(_ == Disk(x, y + 1, player)).nonEmpty) ||
+    (board.find(_ == Disk(x - 1, y - 1, player)).nonEmpty && board.find(_ == Disk(x + 1, y + 1, player)).nonEmpty) ||
+    (board.find(_ == Disk(x - 1, y + 1, player)).nonEmpty && board.find(_ == Disk(x + 1, y - 1, player)).nonEmpty)
 
   def printBoards(game: Seq[Board]): Unit =
     for
@@ -94,9 +110,11 @@ object ConnectThree extends App:
   // ...O ..XO .X.O X..O
   println("EX 4: ")
 // Exercise 3 (ADVANCED!): implement computeAnyGame such that..
-  computeAnyGame(O, 3).foreach { g =>
+  var i = 0
+  computeAnyGame(O, 5).foreach { g =>
     printBoards(g)
-    println()
+    println(i)
+    i = i + 1
   }
 //  .... .... .... .... ...O
 //  .... .... .... ...X ...X
