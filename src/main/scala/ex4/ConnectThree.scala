@@ -27,13 +27,35 @@ object ConnectThree extends App:
 
   import Player.*
 
-  def find(board: Board, x: Int, y: Int): Option[Player] = ???
+  def find(board: Board, x: Int, y: Int): Option[Player] = board match
+    case h :: t => if h.x == x && h.y == y then Option(h.player) else find(t, x, y)
+    case _ => Option.empty
 
-  def firstAvailableRow(board: Board, x: Int): Option[Int] = ???
+  def firstAvailableRow(board: Board, x: Int): Option[Int] = 
+    def _firstAvailableRow(board: Board, x: Int, c: Int): Option[Int] = board match
+      case h :: t => _firstAvailableRow(t, x, c + (if h.x == x then 1 else 0))
+      case _ => if c > bound then Option.empty else Option(c)
+    _firstAvailableRow(board, x, 0)
 
-  def placeAnyDisk(board: Board, player: Player): Seq[Board] = ???
+  def placeAnyDisk(board: Board, player: Player): Seq[Board] =
+    for
+      n <- 0 to bound
+      x = firstAvailableRow(board, n)
+      if !x.isEmpty
+      disk = Disk(n, x.get, player)
+    yield
+      disk +: board
 
-  def computeAnyGame(player: Player, moves: Int): LazyList[Game] = ???
+  def computeAnyGame(player: Player, moves: Int): LazyList[Game] =
+    val startingBoard: Board = List()
+    moves match
+      case n if n <= 0 => LazyList(List(startingBoard))
+      case _ =>
+        for
+          game <- computeAnyGame(player.other, moves - 1)
+          sol <- placeAnyDisk(game.head, player)
+        yield
+          sol +: game
 
   def printBoards(game: Seq[Board]): Unit =
     for
@@ -52,7 +74,7 @@ object ConnectThree extends App:
   println(find(List(Disk(0, 0, X), Disk(0, 1, O), Disk(0, 2, X)), 0, 1)) // Some(O)
   println(find(List(Disk(0, 0, X), Disk(0, 1, O), Disk(0, 2, X)), 1, 1)) // None
 
-  // Exercise 2: implement firstAvailableRow such that..
+//   // Exercise 2: implement firstAvailableRow such that..
   println("EX 2: ")
   println(firstAvailableRow(List(), 0)) // Some(0)
   println(firstAvailableRow(List(Disk(0, 0, X)), 0)) // Some(1)
@@ -65,14 +87,14 @@ object ConnectThree extends App:
   // .... .... .... ....
   // .... .... .... ....
   // ...X ..X. .X.. X...
-  printBoards(placeAnyDisk(List(Disk(0, 0, O)), X))
+  printBoards(placeAnyDisk(List(Disk(3, 0, O)), X))
   // .... .... .... ....
   // .... .... .... ....
   // ...X .... .... ....
   // ...O ..XO .X.O X..O
   println("EX 4: ")
 // Exercise 3 (ADVANCED!): implement computeAnyGame such that..
-  computeAnyGame(O, 4).foreach { g =>
+  computeAnyGame(O, 3).foreach { g =>
     printBoards(g)
     println()
   }
