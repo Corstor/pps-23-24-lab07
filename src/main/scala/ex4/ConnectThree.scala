@@ -1,6 +1,7 @@
 package ex4
 
 import java.util.OptionalInt
+import scala.util.Random
 
 // Optional!
 object ConnectThree extends App:
@@ -85,6 +86,41 @@ object ConnectThree extends App:
         print(" ")
         if board == game.head then println()
 
+  def randomAI(board: Board, player: Player): Board = 
+    val x = Random.nextInt(bound)
+    val y = firstAvailableRow(board, x)
+    if y.nonEmpty then
+      Disk(x, y.get, player) +: board
+    else
+      board
+
+  def diskInAColumn(board: Board, x: Int): Seq[Disk] =
+    board.filter(d => d._1 == x)
+
+  def consecutiveDisks(disks: Seq[Disk], player: Player): Int = 
+    disks.foldRight(0, player)((disk, c) =>
+      if disk._3 == player && c._2 == player then
+        (c._1 + 1, c._2)
+      else
+        (c._1, player.other)
+    )._1
+
+  def smartAI(board: Board, player: Player): Board = 
+    val consecutiveDisksWithColumn = for
+      x <- 0 to bound
+      disks = diskInAColumn(board, x)
+    yield
+      (consecutiveDisks(disks, player), x)
+
+    val nDisks = consecutiveDisksWithColumn.sortBy(d => d._1).filter(d => firstAvailableRow(board, d._2).nonEmpty)
+    if nDisks.nonEmpty then 
+      val maxDisks = nDisks.last
+      val x = maxDisks._2
+      val y = firstAvailableRow(board, x).get //Already checked in filter
+      Disk(x, y, player) +: board
+    else
+      board
+
   // Exercise 1: implement find such that..
   println("EX 1: ")
   println(find(List(Disk(0, 0, X)), 0, 0)) // Some(X)
@@ -98,7 +134,13 @@ object ConnectThree extends App:
   println(firstAvailableRow(List(Disk(0, 0, X), Disk(0, 1, X)), 0)) // Some(2)
   println(firstAvailableRow(List(Disk(0, 0, X), Disk(0, 1, X), Disk(0, 2, X)), 0)) // Some(3)
   println(firstAvailableRow(List(Disk(0, 0, X), Disk(0, 1, X), Disk(0, 2, X), Disk(0, 3, X)), 0)) // None
-  // Exercise 2: implement placeAnyDisk such that..
+
+  println:
+    "'Smart' AI"
+  printBoards:
+    List(smartAI(List(Disk(0, 0, O), Disk(1, 0, O), Disk(2, 0, X)), X))
+  
+  // Exercise 3: implement placeAnyDisk such that..
   printBoards(placeAnyDisk(List(), X))
   // .... .... .... ....
   // .... .... .... ....
@@ -110,11 +152,11 @@ object ConnectThree extends App:
   // ...X .... .... ....
   // ...O ..XO .X.O X..O
   println("EX 4: ")
-// Exercise 3 (ADVANCED!): implement computeAnyGame such that..
-  computeAnyGame(O, 17).foreach ( g =>
-    printBoards(g)
-    println()
-  )
+// Exercise 4 (ADVANCED!): implement computeAnyGame such that..
+  // computeAnyGame(O, 7).foreach ( g =>
+  //   printBoards(g)
+  //   println()
+  // )
 
 //  .... .... .... .... ...O
 //  .... .... .... ...X ...X
