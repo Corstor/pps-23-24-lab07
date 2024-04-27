@@ -17,6 +17,8 @@ trait ConnectThree:
   def computeAnyGame(player: Player, moves: Int): LazyList[Game]
   def randomAI(board: Board, player: Player): Board
   def smartAI(board: Board, player: Player): Board
+  def putDisk(board: Board, x: Int, player: Player): Board
+  def isWon(board: Board): Option[Player]
 
 object ConnectThree extends App:
   def apply(): ConnectThree = ConnectThreeImpl()
@@ -68,7 +70,7 @@ object ConnectThree extends App:
               game <- _computeAnyGame(player.other, moves - 1)
               sol <- placeAnyDisk(game.head, player)
             yield
-              if !isWon(sol) then sol +: game else game
+              if isWon(sol).isEmpty then sol +: game else game
       _computeAnyGame(if moves % 2 == 0 then player.other else player, moves)
 
     override def randomAI(board: Board, player: Player): Board = 
@@ -95,18 +97,21 @@ object ConnectThree extends App:
       else
         board
 
+    override def putDisk(board: Board, x: Int, player: Player): Board = ???
+
+    override def isWon(sol: Board): Option[Player] =
+      val winningPlayer = for
+        x <- 0 to bound
+        y <- 0 to bound
+        if !((x == 0 || x == bound) && (y == 0 || y == bound))
+        player <- find(sol, x, y)
+        if isConnectedToThree(x, y, player, sol)
+      yield
+        player
+      if winningPlayer.isEmpty then Option.empty else Option(winningPlayer.last)
+
     private object PrivateMethods:
       val bound = 3
-
-      def isWon(sol: Board): Boolean = 
-        (for
-          x <- 0 to bound
-          y <- 0 to bound
-          if !((x == 0 || x == bound) && (y == 0 || y == bound))
-          player <- find(sol, x, y)
-          if isConnectedToThree(x, y, player, sol)
-        yield
-          true).nonEmpty
 
       def isConnectedToThree(x: Int, y: Int, player: Player, board: Board): Boolean =
         (board.find(_ == Disk(x - 1, y, player)).nonEmpty && board.find(_ == Disk(x + 1, y, player)).nonEmpty) ||
@@ -159,7 +164,7 @@ object ConnectThree extends App:
 
       println("EX 4: ")
     
-      // computeAnyGame(O, 7).foreach ( g =>
-      //   printBoards(g)
-      //   println()
-      // )
+      computeAnyGame(O, 5).foreach ( g =>
+        printBoards(g)
+        println()
+      )
