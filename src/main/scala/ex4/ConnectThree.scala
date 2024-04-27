@@ -18,6 +18,7 @@ trait ConnectThree:
   def randomAI(board: Board, player: Player): Board
   def smartAI(board: Board, player: Player): Board
   def putDisk(board: Board, x: Int, player: Player): Board
+  def boardIsFull(board: Board): Boolean
   def isWon(board: Board): Option[Player]
 
 object ConnectThree extends App:
@@ -73,13 +74,19 @@ object ConnectThree extends App:
               if isWon(sol).isEmpty then sol +: game else game
       _computeAnyGame(if moves % 2 == 0 then player.other else player, moves)
 
-    override def randomAI(board: Board, player: Player): Board = 
-      val x = Random.nextInt(bound)
-      val y = firstAvailableRow(board, x)
-      if y.nonEmpty then
-        Disk(x, y.get, player) +: board
-      else
+    override def boardIsFull(board: Board): Boolean =
+      board.size == (bound + 1) * (bound + 1)
+
+    override def randomAI(board: Board, player: Player): Board =
+      if boardIsFull(board) then
         board
+      else
+        val x = Random.nextInt(bound)
+        val boardWithRandomDisk = putDisk(board, x, player)
+        if boardWithRandomDisk == board then
+          randomAI(board, player)
+        else
+          boardWithRandomDisk
 
     override def smartAI(board: Board, player: Player): Board = 
       val consecutiveDisksWithColumn = for
@@ -89,15 +96,19 @@ object ConnectThree extends App:
         (consecutiveDisks(disks, player), x)
 
       val nDisks = consecutiveDisksWithColumn.sortBy(d => d._1).filter(d => firstAvailableRow(board, d._2).nonEmpty)
-      if nDisks.nonEmpty then 
+      if nDisks.nonEmpty then
         val maxDisks = nDisks.last
         val x = maxDisks._2
-        val y = firstAvailableRow(board, x).get //Already checked in filter
-        Disk(x, y, player) +: board
+        putDisk(board, x, player)
       else
         board
 
-    override def putDisk(board: Board, x: Int, player: Player): Board = ???
+    override def putDisk(board: Board, x: Int, player: Player): Board = 
+      val y = firstAvailableRow(board, x)
+      if y.isEmpty then
+        board
+      else
+        Disk(x, y.get, player) +: board
 
     override def isWon(sol: Board): Option[Player] =
       val winningPlayer = for
