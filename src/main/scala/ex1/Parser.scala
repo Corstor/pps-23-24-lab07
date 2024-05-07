@@ -20,7 +20,7 @@ class BasicParser(chars: Set[Char]) extends Parser[Char]:
   override def end: Boolean = true
 
 trait NonEmpty[T] extends Parser[T]:
-  private[this] var empty = true
+  private var empty = true
   abstract override def parse(t: T): Boolean =
     empty = false;
     super.parse(t) // who is super??
@@ -29,8 +29,8 @@ trait NonEmpty[T] extends Parser[T]:
 class NonEmptyParser(chars: Set[Char]) extends BasicParser(chars) with NonEmpty[Char]
 
 trait NotTwoConsecutive[T] extends Parser[T]:
-  private[this] var pred: Option[T] = Option.empty
-  private[this] var notTwoConsecutive = true
+  private var pred: Option[T] = Option.empty
+  private var notTwoConsecutive = true
 
   abstract override def parse(t: T): Boolean =
     if !pred.isEmpty && pred.get == t then
@@ -42,8 +42,8 @@ trait NotTwoConsecutive[T] extends Parser[T]:
 
 class NotTwoConsecutiveParser(chars: Set[Char]) extends BasicParser(chars) with NotTwoConsecutive[Char]
 
-trait ShortenThenN[T](private[this] val n: Int) extends Parser[T]:
-  private[this] var nChecked: Int = 0
+trait ShortenThenN[T](private val n: Int) extends Parser[T]:
+  private var nChecked: Int = 0
 
   abstract override def parse(t: T): Boolean =
     nChecked = nChecked + 1
