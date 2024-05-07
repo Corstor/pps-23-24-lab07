@@ -3,30 +3,15 @@ package ex4
 import java.util.OptionalInt
 import scala.util.Random
 
-trait ConnectThree:
-  enum Player:
-    case X, O
-    def other: Player = this match
-      case X => O
-      case _ => X
-  type Board
-  type Game
-  def find(board: Board, x: Int, y: Int): Option[Player]
-  def firstAvailableRow(board: Board, x: Int): Option[Int]
-  def placeAnyDisk(board: Board, player: Player): Seq[Board]
-  def computeAnyGame(player: Player, moves: Int): LazyList[Game]
-  def randomAI(board: Board, player: Player): Board
-  def smartAI(board: Board, player: Player): Board
-  def putDisk(board: Board, x: Int, player: Player): Board
-  def boardIsFull(board: Board): Boolean
-  def isWon(board: Board): Option[Player]
-
 object ConnectThree extends App:
-  def apply(): ConnectThree = ConnectThreeImpl()
-  ConnectThreeImpl().main() //Called just to run the print inside the ConnectThreeImpl class
+    enum Player:
+      case X, O
+      def other: Player = this match
+        case X => O
+        case _ => X
 
-  private class ConnectThreeImpl extends ConnectThree:
     case class Disk(x: Int, y: Int, player: Player)
+
     /**
      * Board:
      * y
@@ -43,17 +28,17 @@ object ConnectThree extends App:
     import Player.*
     import PrivateMethods.*
 
-    override def find(board: Board, x: Int, y: Int): Option[Player] = board match
+    def find(board: Board, x: Int, y: Int): Option[Player] = board match
       case h :: t => if h.x == x && h.y == y then Option(h.player) else find(t, x, y)
       case _ => Option.empty
 
-    override def firstAvailableRow(board: Board, x: Int): Option[Int] =
+    def firstAvailableRow(board: Board, x: Int): Option[Int] =
       def _firstAvailableRow(board: Board, x: Int, c: Int): Option[Int] = board match
         case h :: t => _firstAvailableRow(t, x, c + (if h.x == x then 1 else 0))
         case _ => if c > bound then Option.empty else Option(c)
       _firstAvailableRow(board, x, 0)
 
-    override def placeAnyDisk(board: Board, player: Player): Seq[Board] =
+    def placeAnyDisk(board: Board, player: Player): Seq[Board] =
       for
         x <- 0 to bound
         y <- firstAvailableRow(board,x)
@@ -61,7 +46,7 @@ object ConnectThree extends App:
       yield
         disk +: board
 
-    override def computeAnyGame(player: Player, moves: Int): LazyList[Game] =
+    def computeAnyGame(player: Player, moves: Int): LazyList[Game] =
       val emptyGame: LazyList[Game] = LazyList(List(List()))
       def _computeAnyGame(player: Player, moves: Int): LazyList[Game] =
         moves match
@@ -74,10 +59,10 @@ object ConnectThree extends App:
               if isWon(sol).isEmpty then sol +: game else game
       _computeAnyGame(if moves % 2 == 0 then player.other else player, moves)
 
-    override def boardIsFull(board: Board): Boolean =
+    def boardIsFull(board: Board): Boolean =
       board.size == (bound + 1) * (bound + 1)
 
-    override def randomAI(board: Board, player: Player): Board =
+    def randomAI(board: Board, player: Player): Board =
       if boardIsFull(board) then
         board
       else
@@ -88,7 +73,7 @@ object ConnectThree extends App:
         else
           boardWithRandomDisk
 
-    override def smartAI(board: Board, player: Player): Board = 
+    def smartAI(board: Board, player: Player): Board = 
       val consecutiveDisksWithColumn = for
         x <- 0 to bound
         disks = diskInAColumn(board, x)
@@ -103,14 +88,14 @@ object ConnectThree extends App:
       else
         board
 
-    override def putDisk(board: Board, x: Int, player: Player): Board = 
+    def putDisk(board: Board, x: Int, player: Player): Board = 
       val y = firstAvailableRow(board, x)
       if y.isEmpty then
         board
       else
         Disk(x, y.get, player) +: board
 
-    override def isWon(sol: Board): Option[Player] =
+    def isWon(sol: Board): Option[Player] =
       val winningPlayer = for
         x <- 0 to bound
         y <- 0 to bound
@@ -152,30 +137,29 @@ object ConnectThree extends App:
           print(" ")
           if board == game.head then println()
 
-    def main() =
-      println("EX 1: ")
-      println(find(List(Disk(0, 0, X)), 0, 0)) // Some(X)
-      println(find(List(Disk(0, 0, X), Disk(0, 1, O), Disk(0, 2, X)), 0, 1)) // Some(O)
-      println(find(List(Disk(0, 0, X), Disk(0, 1, O), Disk(0, 2, X)), 1, 1)) // None
+    println("EX 1: ")
+    println(find(List(Disk(0, 0, X)), 0, 0)) // Some(X)
+    println(find(List(Disk(0, 0, X), Disk(0, 1, O), Disk(0, 2, X)), 0, 1)) // Some(O)
+    println(find(List(Disk(0, 0, X), Disk(0, 1, O), Disk(0, 2, X)), 1, 1)) // None
 
-      println("EX 2: ")
-      println(firstAvailableRow(List(), 0)) // Some(0)
-      println(firstAvailableRow(List(Disk(0, 0, X)), 0)) // Some(1)
-      println(firstAvailableRow(List(Disk(0, 0, X), Disk(0, 1, X)), 0)) // Some(2)
-      println(firstAvailableRow(List(Disk(0, 0, X), Disk(0, 1, X), Disk(0, 2, X)), 0)) // Some(3)
-      println(firstAvailableRow(List(Disk(0, 0, X), Disk(0, 1, X), Disk(0, 2, X), Disk(0, 3, X)), 0)) // None
+    println("EX 2: ")
+    println(firstAvailableRow(List(), 0)) // Some(0)
+    println(firstAvailableRow(List(Disk(0, 0, X)), 0)) // Some(1)
+    println(firstAvailableRow(List(Disk(0, 0, X), Disk(0, 1, X)), 0)) // Some(2)
+    println(firstAvailableRow(List(Disk(0, 0, X), Disk(0, 1, X), Disk(0, 2, X)), 0)) // Some(3)
+    println(firstAvailableRow(List(Disk(0, 0, X), Disk(0, 1, X), Disk(0, 2, X), Disk(0, 3, X)), 0)) // None
 
-      println:
-        "'Smart' AI"
-      printBoards:
-        List(smartAI(List(Disk(0, 0, O), Disk(1, 0, O), Disk(2, 0, X)), X))
-      
-      printBoards(placeAnyDisk(List(), X))
-      printBoards(placeAnyDisk(List(Disk(3, 0, O)), X))
-
-      println("EX 4: ")
+    println:
+      "'Smart' AI"
+    printBoards:
+      List(smartAI(List(Disk(0, 0, O), Disk(1, 0, O), Disk(2, 0, X)), X))
     
-      computeAnyGame(O, 5).foreach ( g =>
-        printBoards(g)
-        println()
-      )
+    printBoards(placeAnyDisk(List(), X))
+    printBoards(placeAnyDisk(List(Disk(3, 0, O)), X))
+
+    println("EX 4: ")
+
+    computeAnyGame(O, 3).foreach ( g =>
+      printBoards(g)
+      println()
+    )
